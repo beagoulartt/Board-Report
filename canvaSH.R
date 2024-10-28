@@ -13,6 +13,8 @@
   library(gdata)
   library(scales)
   library(officer)
+  library(magrittr) 
+
 # Load Current Data ----
 load("../../Data/currentData.Rdata")
 #library("googledrive")
@@ -254,11 +256,6 @@ ppt <- add_Title_Graphic_Legend(
 )
 
 
-
-
-
-
-
 # Slide 10 ----
 currentMonth
 Demographics$Age <- Demographics$Age %>% as.numeric()
@@ -279,32 +276,23 @@ nonBinaryPercentage <- paste(dirPercentageRounding(countNonBinaryRV / SHUniqueCo
 countOtherGenderRV <- sum(SHUniqueVisitors$genderOther, na.rm = TRUE)
 otherGenderPercentage <- paste(dirPercentageRounding(countOtherGenderRV / SHUniqueCount), "%", sep = "")
 
-# Create invisible lines using newline characters
-invisibleLine <- "\n"  # Adjust the number of \n to create the desired space
 
 # Combine results into a single text string for text1, including the average age
-text1 <- paste("Average Age: ", dirRounding(meanAge), 
-               invisibleLine,
-               "HIV Positive: ", hivPercentage,
-               invisibleLine,
-               "Cis Male: ", cisManPercentage,
-               invisibleLine,
-               "Trans Male: ", transManPercentage,
-               invisibleLine,
-               "Trans Woman: ", transWomanPercentage,
-               invisibleLine,
-               "Non-Binary: ", nonBinaryPercentage,
-               invisibleLine,
-               "Other Gender: ", otherGenderPercentage)
+text1 <- paste("Average Age: ", dirRounding(meanAge))
+text2 <- paste("HIV Positive: ", hivPercentage)
+text3 <- paste("Cis Male: ", cisManPercentage)
+text4 <- paste("Trans Male: ", transManPercentage)
+text5 <- paste("Trans Woman: ", transWomanPercentage)
+text6 <- paste("Non-Binary: ", nonBinaryPercentage)
+text7 <- paste("Other Gender: ", otherGenderPercentage)
 
 # Function for the layout Demographics
 
 # Define a function to add a slide and populate the content
-add_Title_Text <- function(ppt, title, text1 = Sys.Date()) {
+add_Title_Text <- function(ppt, title, text1, text2, text3, text4, text5, text6, text7) {
   
   # Create the dynamic title with a static start date and current date
-  title <- paste("Demographics July 2022 to", 
-                 format(Sys.Date(), "%B %Y"))  
+  title <- paste("Demographics July 2022 to", format(Sys.Date(), "%B %Y"))  
   
   # Open the PowerPoint presentation
   ppt <- read_pptx("C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
@@ -312,18 +300,31 @@ add_Title_Text <- function(ppt, title, text1 = Sys.Date()) {
   ppt %>%
     add_slide(layout = "Demographics", master = "HQ Master Style Slide") %>%
     ph_with(value = title, location = ph_location_label(ph_label = "Text Placeholder 39")) %>%
-    ph_with(value = text1, location = ph_location_label(ph_label = "text1"))
+    ph_with(value = text1, location = ph_location_label(ph_label = "text1")) %>%
+    ph_with(value = text2, location = ph_location_label(ph_label = "text2")) %>%
+    ph_with(value = text3, location = ph_location_label(ph_label = "text3")) %>%
+    ph_with(value = text4, location = ph_location_label(ph_label = "text4")) %>%
+    ph_with(value = text5, location = ph_location_label(ph_label = "text5")) %>%
+    ph_with(value = text6, location = ph_location_label(ph_label = "text6")) %>%
+    ph_with(value = text7, location = ph_location_label(ph_label = "text7")) 
+   
   
   # Save the updated PowerPoint
   print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
 }
 
 # Example usage
+# Correct example usage
 ppt <- add_Title_Text(ppt, 
-                      text1 = text1)
-
-
-
+                      title = title,
+                      text1 = text1,
+                      text2 = text2,
+                      text3 = text3,
+                      text4 = text4,
+                      text5 = text5,
+                      text6 = text6,
+                      text7 = text7)
+                  
 
 
 # Slide 5 ----
@@ -513,13 +514,113 @@ slide6 <- slide6 %>% rename(`HQ Percentage` = subtotalPercenttext,
 range_clear(googleSheet,sheet = "Sheet6")
 sheet_append(ss= googleSheet, data =slide6,sheet = "Sheet6")
 
+
+#Creating a bar plot for the ethnicity percentages
+
+# Creating a grouped bar plot for the ethnicity percentages
+ethnicity_plot <- ggplot(MiniEthnicitySummary2, aes(x = `Ethnicity.Groups`)) +
+  
+  # Add bar for HQ Toronto in orange
+  geom_bar(aes(y = subtotalPercentNew, fill = "HQ Toronto"), stat = "identity", position = "dodge", color = "black") +
+  
+  # Add bar for Toronto Census in yellow
+  geom_bar(aes(y = censusNumbers, fill = "Toronto Census"), stat = "identity", position = "dodge", color = "black") +
+  
+  # Customize colors for the bars
+  scale_fill_manual(values = c("HQ Toronto" = "orange", "Toronto Census" = "yellow")) +
+  
+  # Add labels and title
+  labs(title = "Ethnicity Distribution: HQ Toronto vs Toronto Census",
+       x = "Ethnicity Groups", 
+       y = "Percentage (%)", 
+       fill = "Legend") +
+  
+  # Rotate the x-axis labels for better readability
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Print the plot
+print(ethnicity_plot)
+
+# Save the plot as a PNG file
+ggsave("ethnicity_distribution.png", plot = ethnicity_plot, width = 10, height = 6, dpi = 300)
+
+
+
+# Function for the template Ethnicity
+
+# Define a function to add a slide and populate the content
+add_Title_Graphic <- function(ppt, title, ethnicity_plot = Sys.Date()) {
+  
+  
+  # Open the PowerPoint presentation
+  ppt <- read_pptx("C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")  
+  
+  # Add a new slide and populate placeholders
+  ppt <- ppt %>%
+    add_slide(layout = "Ethnicity", master = "HQ Master Style Slide") %>%
+    
+    # Add title text to the placeholder labeled "Title"
+    ph_with(value = title, location = ph_location_label(ph_label = "title")) %>%
+    
+
+    # Add the picture to the placeholder labeled "Picture"
+    ph_with(value = external_img(ethnicity_plot), location = ph_location_label(ph_label = "Picture"))
+  
+  
+  # Save the updated PowerPoint
+  print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
+  
+ }
+
+# Call the function with the title and picture
+ppt <- add_Title_Graphic(
+  ppt, 
+  title = "Ethnicity by individuals
+July 2022 to June 2024", 
+  ethnicity_plot = plot_file
+)
+
+
+
+
 # Slide 7 ----
 slide7 <- MiniEthnicitySummary2 %>% select(Ethnicity.Groups,Difference)
 slide7 <- slide7 %>% rename(` ` = Ethnicity.Groups) %>% arrange(desc(Difference))
-slide7
+#slide7
 
 range_clear(googleSheet,sheet = "Sheet7")
 sheet_append(ss= googleSheet, data =slide7,sheet = "Sheet7")
+
+
+# Step 1: Prepare the data
+slide7 <- add_slide(layout = "Ethnicity 2020", master = "HQ Master Style Slide") %>%
+  select(Ethnicity.Groups, Difference) %>%
+  rename(` ` = Ethnicity.Groups) %>%
+  arrange(desc(Difference))
+
+# Step 2: Create the plot
+plot <- ggplot(slide7, aes(x = reorder(` `, Difference), y = Difference)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Difference by Ethnicity Group", x = "Ethnicity Groups", y = "Difference") +
+  theme_minimal()
+
+# Step 3: Save the plot as an image
+image_path <- "ethnicity_difference_plot.png"
+ggsave(image_path, plot, width = 8, height = 6)
+
+# Step 4: Create a PowerPoint and add the image to Slide 7
+ppt <- read_pptx("C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")  # Load existing PPTX file
+ppt <- add_slide(ppt, layout = "Title and Content", master = "Office Theme")  # Add a new slide (adjust layout if needed)
+
+# Add the image to the slide
+ppt <- ph_with(ppt, external_img(image_path), location = ph_location_type(type = "body"))
+
+# Step 5: Save the PowerPoint to the specified path
+print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
+
+
 
 # Slide 8 ----
 ## TODO: request calculation method ----
