@@ -324,6 +324,11 @@ ppt <- add_Title_Text(ppt,
 # Slide 5 ----
 currentMonth
 
+
+
+
+
+
 # Slide 6 ----
 currentMonth
 ## Calculation----
@@ -508,6 +513,8 @@ slide6 <- slide6 %>% rename(`HQ Percentage` = subtotalPercenttext,
 #range_clear(googleSheet,sheet = "Sheet6")
 #sheet_append(ss= googleSheet, data =slide6,sheet = "Sheet6")
 
+
+
 # Creating a bar plot for the ethnicity percentages
 ethnicity_plot <- ggplot(MiniEthnicitySummary2, aes(x = `Ethnicity.Groups`)) +
   geom_bar(aes(y = subtotalPercentNew, fill = "HQ Toronto"), stat = "identity", position = "dodge", color = "black") +
@@ -520,22 +527,40 @@ ethnicity_plot <- ggplot(MiniEthnicitySummary2, aes(x = `Ethnicity.Groups`)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+
+# Print the plot
+print(ethnicity_plot)
+
+# Save the plot as a PNG file
+ggsave("ethnicity_distribution.png", plot = ethnicity_plot, width = 10, height = 6, dpi = 300)
+
+
+# Function for the template Ethnicity
+# Define a function to add a slide and populate the content
+add_Title_Graphic <- function(ppt, title, image_path = "ethnicity_distribution.png") {
+  
+  # Open the PowerPoint presentation
+  ppt <- read_pptx("C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")  
+  
+  # Add a new slide and populate placeholders
+  ppt <- ppt %>%
+    add_slide(layout = "Ethnicity", master = "HQ Master Style Slide") %>% 
     
     # Add title text to the placeholder labeled "Title"
-    ph_with(value = title, location = ph_location_label(ph_label = "title")) %>%
+    ph_with(value = title, location = ph_location_label(ph_label = "title")) %>% 
     
-    
-    # Add the picture to the placeholder labeled "Picture"
-    ph_with(value = external_img("ethnicity_distribution.png"), location = ph_location_label(ph_label = "Picture"))
+    # Add the saved image (ethnicity_distribution.png) to the placeholder labeled "Picture"
+    ph_with(value = external_img(image_path), location = ph_location_label(ph_label = "Picture"))
   
   # Save the updated PowerPoint
-  print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
+  print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
+}
 
-
-# Call the function with the title
+# Call the function with the title and image path
 ppt <- add_Title_Graphic(
   ppt, 
-  title = "Ethnicity by Individuals\nJuly 2022 to June 2024"
+  title = "Ethnicity by individuals\nJuly 2022 to June 2024", 
+  image_path = "ethnicity_distribution.png"
 )
 
 
@@ -570,7 +595,7 @@ ppt <- add_slide(ppt, layout = "Ethnicity2020", master = "HQ Master Style Slide"
 #ppt <- ph_with(ppt, value = "Difference Between Toronto 2020 Census and HQ", location = ph_location_type(type = "body"))
 
 # Add the plot image using the label "Imagem"
-ppt <- ph_with_img(ppt, src = plot_path, location = ph_location_label(label = "Imagem"))
+ppt <- ph_with_img(ppt, src = plot_path, location = ph_location_label(ph_label = "Imagem"))
 
 # Save the modified PowerPoint presentation
 print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
