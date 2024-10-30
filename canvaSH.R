@@ -199,8 +199,8 @@ monthlyCount
 
 # Create a plot using the totalMonthlyCount data
 plot <- ggplot(totalMonthlyCount, aes(x = ` `, y = n)) +
-  geom_col(fill = "skyblue") +
-  labs(title = "Total Monthly Visits", x = "Month", y = "Number of Visits") +
+  geom_col(fill = "purple") +
+  labs(title = NULL, x = NULL, y = NULL) +  # Remove x and y labels
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
@@ -209,10 +209,6 @@ plot_file <- "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical 
 ggsave(filename = plot_file, plot = plot, width = 8, height = 5, bg = "transparent")  # Save with transparent background
 
 
-
-
-
-# Function for the template Title + Graphic Image + Legend
 
 # Define a function to add a slide and populate the content
 add_Title_Graphic_Legend <- function(ppt, title, graphic_path, legend = Sys.Date()) {
@@ -731,8 +727,6 @@ ppt <- add_Title_Text(
  
  # Slide 12 ----
  ## Wait times ----
- 
-# Slide 14 ----
 labMonthlyCount <- LabResults %>%
   filter(!(TESTS %in% c("LABCT_R", "LABCT_T", "LABCT_U"))) %>%
   group_by(Month = format(as.Date(EntryDate), "%Y-%m (%y %b)")) %>%
@@ -754,26 +748,18 @@ print(ethnicity_plot)
 # Save the plot as a PNG file named "monthlycount"
 ggsave("monthlycount.png", plot = ethnicity_plot, width = 8, height = 6)
 
-# Add a new slide and populate placeholders
+# Add a new slide and populate placeholders (Create only ONE slide)
 ppt <- ppt %>%
   add_slide(layout = "STBBI", master = "HQ Master Style Slide") %>% 
   
-  # Define title and image_path before using them
+  # Define title and add it to the title placeholder
   ph_with(value = "Cumulative data on sexual health visit", location = ph_location_label(ph_label = "title")) %>% 
   
-  # Add the saved image to the placeholder labeled "Picture"
-  ph_with(value = external_img("monthlycount.png"), location = ph_location_label(ph_label = "Picture"))  # Use correct image path
+  # Add the saved image (plot) to the placeholder labeled "Picture"
+  ph_with(value = external_img("monthlycount.png"), location = ph_location_label(ph_label = "Picture"))
 
-# Save the updated PowerPoint
+# Save the updated PowerPoint with only one slide
 print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
-
-# Call the add_Title_Text function
-ppt <- add_Title_Text(
-  Text1 = paste("Cumulative data on sexual health visit from July 2022 to", format(Sys.Date(), "%B %Y")),
-  Text2 = paste(slide2a, slide2b, sep = "\n")  # Ensure slide2a and slide2b are defined
-)
-
-
 
 
 
