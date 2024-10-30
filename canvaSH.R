@@ -325,10 +325,6 @@ ppt <- add_Title_Text(ppt,
 currentMonth
 
 
-
-
-
-
 # Slide 6 ----
 currentMonth
 ## Calculation----
@@ -581,31 +577,51 @@ ethnicity_plot <- ggplot(slide7, aes(x = reorder(`Ethnicity Group`, Difference),
   scale_fill_manual(values = rep(c("steelblue", "orange", "green"), length.out = nrow(slide7))) +  # Rotating colors
   theme_minimal()
 
+
+# Print the plot
+print(ethnicity_plot)
+
+
 # Save the plot as an image
 plot_path <- "ethnicity_plot.png"
 ggsave(plot_path, plot = ethnicity_plot, width = 8, height = 6)
 
+
+# Define a function to add a slide and populate the content
+add_Title_Image <- function(ppt, title, image_path) {
+  
+  # Add a new slide with "Ethnicity2020" layout 
+  ppt <- add_slide(ppt, layout = "Ethnicity2020", master = "HQ Master Style Slide") 
+  
+  # Add the plot image using the label "Imagem"
+  ppt <- ph_with(ppt, value = external_img(image_path), location = ph_location_label(ph_label = "Imagem"))
+  
+  # Add the title
+  ppt <- ph_with(ppt, value = title, location = ph_location_label(ph_label = "title"))
+  
+  # Return modified ppt object
+  return(ppt)
+}
+
 # Load the existing PowerPoint presentation
 ppt <- read_pptx("C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
 
-# Add a new slide with a specific layout (change layout as necessary)
-ppt <- add_slide(ppt, layout = "Ethnicity2020", master = "HQ Master Style Slide") 
-
-# Add the title using the body placeholder instead of the title
-#ppt <- ph_with(ppt, value = "Difference Between Toronto 2020 Census and HQ", location = ph_location_type(type = "body"))
-
-# Add the plot image using the label "Imagem"
-ppt <- ph_with_img(ppt, src = plot_path, location = ph_location_label(ph_label = "Imagem"))
+# Call the function with the title and image path
+ppt <- add_Title_Image(
+  ppt, 
+  title = "Ethnicity (Difference between Toronto 2020 Census and HQ)", 
+  image_path = "ethnicity_plot.png"
+)
 
 # Save the modified PowerPoint presentation
 print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
-
-layout_properties(ppt, layout = "Ethnicity2020", master = "HQ Master Style Slide")
 
 
 
 # Slide 8 ----
 ## TODO: request calculation method ----
+
+
 
 # Slide 9 ----
 ## Experience Slide
@@ -673,29 +689,17 @@ surveySMSCount$n
                                           ## Wait times ----
 
 # Slide 13 ----
-nrow(LabResults )
-nrow(SHAnPTxsData)
 
+Test_Results_Count <- nrow(LabResults) %>% as.character()
 
-# Slide 3 ----
-SHReturnVisits <- AllVisitData %>% filter((visitType == "Return Visit (SH)" | visitType == "First Visit (SH)"))
-slide2a <- paste(n_distinct(SHReturnVisits), "visits")
-slide2b <- paste(n_distinct(SHReturnVisits$EmrID), "individuals")
+Treatments_Count <- nrow(SHAnPTxsData) %>% as.character()
 
-# Combine the two with a newline character between them
-slide2_text <- paste(slide2a, slide2b, sep = "\n")
+paste1a <- Test_Results_Count
+paste1b <- Treatments_Count
 
-SHUniqueVisitors <- SHReturnVisits %>% select(EmrID)
-SHUniqueVisitors <- SHUniqueVisitors %>% distinct()
+#Improving the Health of Our Community
 
-
-#range_clear(googleSheet,sheet = "Sheet2")
-#df <- data.frame(visits=slide2a,individuals=slide2b)
-#sheet_append(ss= googleSheet, data =df,sheet = "Sheet2")
-
-
-# Function for the template Number of Visits
-# Using Layout Number of Visits
+# Function for the template Number of Test Results and Treatment
 
 # Define a function to add a slide and populate the content
 add_Title_Text <- function(Text1, Text2 = Sys.Date()) {
@@ -705,28 +709,72 @@ add_Title_Text <- function(Text1, Text2 = Sys.Date()) {
   
   # Add slide and populate content
   ppt <- ppt %>%
-    add_slide(layout = "Number of Visits", master = "HQ Master Style Slide") %>%
-    ph_with(value = Text1, location = ph_location_label(ph_label = "Text Placeholder 29")) %>%
-    ph_with(value = Text2, location = ph_location_label(ph_label = "Text Placeholder 31"))
-  
-  # Save the updated PowerPoint
-  print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
-  
-  # Return the PowerPoint object
-  return(ppt)
+    add_slide(layout = "Test and Results", master = "HQ Master Style Slide") %>%
+    ph_with(value = Text1, location = ph_location_label(ph_label = "Title")) %>%
+    ph_with(value = Text2, location = ph_location_label(ph_label = "text1"))
+
+# Save the updated PowerPoint
+print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx") 
+
+# Return the PowerPoint object
+return(ppt)
+
 }
-
-
+# Example usage
+ppt <- add_Title_Text(
+  Text1 = "Improving the Health of Our Community",
+  Text2 = paste(paste1a, "Test Results", paste1b, "Treatment:", sep = " ")
+)
+ 
+ # Slide 11 ----
+ ## Experience Slide
+ 
+ # Slide 12 ----
+ ## Wait times ----
+ 
 # Slide 14 ----
-labMonthlyCount <- LabResults %>% filter(!(TESTS == "LABCT_R" |
-                                             TESTS == "LABCT_T" |
-                                             TESTS == "LABCT_U" )) %>%
-                                              group_by(format(as.Date(EntryDate),
-                                                              "%Y-%m (%y %b)")) %>% count()
-slide14<-labMonthlyCount
-labMonthlyCount
-#range_clear(googleSheet,sheet = "Sheet14")
-#sheet_append(ss= googleSheet, data =slide14,sheet = "Sheet14")
+labMonthlyCount <- LabResults %>%
+  filter(!(TESTS %in% c("LABCT_R", "LABCT_T", "LABCT_U"))) %>%
+  group_by(Month = format(as.Date(EntryDate), "%Y-%m (%y %b)")) %>%
+  count()
+
+# Check the labMonthlyCount dataframe
+print(labMonthlyCount)
+
+# Assign the plot to ethnicity_plot using geom_bar
+ethnicity_plot <- ggplot(labMonthlyCount, aes(x = Month, y = n)) +  # Set correct aesthetics
+  geom_bar(stat = "identity", fill = "#FF8C00") +  # Bar plot with orange color
+  labs(title = "Number of Tests", x = NULL, y = NULL) +  # Remove x and y labels
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels
+
+# Print the plot
+print(ethnicity_plot)
+
+# Save the plot as a PNG file named "monthlycount"
+ggsave("monthlycount.png", plot = ethnicity_plot, width = 8, height = 6)
+
+# Add a new slide and populate placeholders
+ppt <- ppt %>%
+  add_slide(layout = "STBBI", master = "HQ Master Style Slide") %>% 
+  
+  # Define title and image_path before using them
+  ph_with(value = "Cumulative data on sexual health visit", location = ph_location_label(ph_label = "title")) %>% 
+  
+  # Add the saved image to the placeholder labeled "Picture"
+  ph_with(value = external_img("monthlycount.png"), location = ph_location_label(ph_label = "Picture"))  # Use correct image path
+
+# Save the updated PowerPoint
+print(ppt, target = "C:\\Users\\DataIntern\\HQToronto\\Shared Docs - General\\Clinical Reporting\\ReportingProjects\\DataIntern\\Board-Report\\CanvaTrial.pptx")
+
+# Call the add_Title_Text function
+ppt <- add_Title_Text(
+  Text1 = paste("Cumulative data on sexual health visit from July 2022 to", format(Sys.Date(), "%B %Y")),
+  Text2 = paste(slide2a, slide2b, sep = "\n")  # Ensure slide2a and slide2b are defined
+)
+
+
+
 
 
 # Slide 15 ----
@@ -743,7 +791,11 @@ resultsCount <- LabResults %>% filter(results == "Positive" |
                                         results == "Negative") %>%
   group_by(TESTS,results) %>% count()
 resultsCount <- resultsCount %>% pivot_wider(names_from = results, values_from = n)
+
+
 slide15<-resultsCount
+
+
 resultsCount %>% View()
 
 GCPos2023 <- LabResults %>% filter(year(EntryDate) == 2023 &results == "Positive" & TESTS == "GC") %>% select(-Site)
@@ -767,6 +819,7 @@ currentMonth
 positivityRate <- resultsCount %>% mutate(Positivity = paste(dirPercentageRounding(Positive/(Negative+Positive)),"%",sep =""))
 positivityRate <- positivityRate %>% select(TESTS, Positivity) %>% arrange(desc(Positivity))
 slide16 <- data.frame(TESTS=c("Tests"),Positivity=c("Positivity rate")) %>% rbind(positivityRate)
+
 slide16
 
 range_clear(googleSheet,sheet = "Sheet16")
